@@ -14,21 +14,44 @@ function CheckOutForm() {
   const totalPrice = cart.reduce((total, item) => total + item.price, 0);
 
   useEffect(() => {
+    // Get the token from localStorage
+    const token = localStorage.getItem("access-token");
+    const totalPrice = cart.reduce((total, item) => total + item.price, 0);
+  
+    // Log values for debugging
+    console.log("Total Price:", totalPrice);
+    console.log("Authorization Token:", token);
+  
+    // Convert the price to cents (if it's in dollars)
+    const amountInCents = totalPrice * 100;
+  
     // Create PaymentIntent as soon as the page loads
     fetch("http://localhost:5000/create-payment-intent", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ price: totalPrice }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ amount: amountInCents }), // Send amount in cents
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) {
+          return res.json().then((error) => {
+            throw new Error(error.message || "Failed to create PaymentIntent");
+          });
+        }
+        return res.json();
+      })
       .then((data) => {
+        console.log("Payment Intent Created: ", data);
         setClientSecret(data.clientSecret); // Update state with client secret
-        setDpmCheckerLink(data.dpmCheckerLink); // [DEV] For demo purposes only
       })
       .catch((err) => {
         console.error("Error creating PaymentIntent:", err);
       });
-  }, []);
+  }, [cart]); // Ensure that the effect runs when `cart` changes
+  
+  
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -72,6 +95,37 @@ function CheckOutForm() {
       if (paymentIntent.status === 'succeeded') {
         console.log('transaction id', paymentIntent.id);
         setTransectionId(paymentIntent.id)
+
+
+        // now savce the payment info in the database
+        const payment = {
+          email: user.email,
+          price: totalPrice,
+          transactionId: paymentIntent.id,
+          date: new Date(), // utc date convert. use moment js
+          cartIds: cart.map(item => item._id),
+          menuItems: cart.map(item => item.itemId),
+          status: 'panding'
+        }
+
+        try {
+          const response = await fetch("http://localhost:5000/payments", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payment),
+          });
+  
+          const data = await response.json();
+          if (response.ok) {
+            console.log("Payment saved successfully:", data);
+          } else {
+            console.error("Error saving payment:", data.message);
+          }
+        } catch (error) {
+          console.error("Error posting payment:", error);
+        }
       }
     }
   };

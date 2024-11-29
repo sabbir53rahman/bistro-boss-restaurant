@@ -31,6 +31,7 @@ function OrderFood() {
 
   // Handle add to cart
   const handleAddToCart = (item) => {
+    console.log(item)
     if (!user) {
       // If the user is not logged in, show SweetAlert
       Swal.fire({
@@ -47,6 +48,7 @@ function OrderFood() {
       price: item.price,
       category: item.category,
       image: item.image,
+      itemId: item._id,
       email: user.email, // Add the user's email to the cart item
       quantity: 1, // Default quantity is 1, you can modify this later
     };
