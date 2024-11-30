@@ -22,6 +22,7 @@ import AddItems from "./pages/Dashboard/MyCart/AddItems";
 import AdminRoute from "./components/Routes/AdminRoute";
 import ManageItems from "./pages/Dashboard/MyCart/ManageItems";
 import Payment from "./pages/Dashboard/Payment/Payment";
+import PaymentHistory from "./pages/Dashboard/Payment/PaymentHistory";
 
 const queryClient = new QueryClient();
 
@@ -92,6 +93,10 @@ const router = createBrowserRouter([
       {
         path: "payment",
         element: <Payment />,
+      },
+      {
+        path: "payment-history",
+        element: <PaymentHistory />,
       },
 
       // Admin only routes

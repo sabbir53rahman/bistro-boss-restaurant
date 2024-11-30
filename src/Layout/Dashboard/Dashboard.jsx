@@ -96,7 +96,7 @@ function Dashboard() {
                 </li>
                 <li className="hover:bg-hotel-secondary transition-all rounded-md">
                   <Link
-                    to="/dashboard/mycart"
+                    to="/dashboard/payment-history"
                     className="flex items-center p-4"
                   >
                     <FaWallet className="mr-4 text-2xl" />
